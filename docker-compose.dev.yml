@@ -1,0 +1,147 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: edna-postgres-dev
+    environment:
+      POSTGRES_DB: edna_platform
+      POSTGRES_USER: edna_user
+      POSTGRES_PASSWORD: edna_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./database/schema/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - edna-network
+
+  # Redis Cache and Job Queue
+  redis:
+    image: redis:7-alpine
+    container_name: edna-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - edna-network
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: edna-minio-dev
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data_dev:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - edna-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: edna-backend-dev
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://edna_user:edna_password@postgres:5432/edna_platform
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      JWT_SECRET: dev-jwt-secret-key
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - edna-network
+    command: npm run dev
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: edna-frontend-dev
+    environment:
+      VITE_API_URL: http://localhost:5000
+      VITE_WS_URL: ws://localhost:5000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - edna-network
+    command: npm run dev
+
+  # ML Pipeline
+  ml-pipeline:
+    build:
+      context: ./ml-pipeline
+      dockerfile: Dockerfile.dev
+    container_name: edna-ml-pipeline-dev
+    environment:
+      DATABASE_URL: postgresql://edna_user:edna_password@postgres:5432/edna_platform
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      BLAST_DB_PATH: /app/data/blast
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml-pipeline:/app
+      - blast_data_dev:/app/data/blast
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - edna-network
+    command: python -m uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+
+  # Elasticsearch for search functionality
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: edna-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data_dev:/usr/share/elasticsearch/data
+    networks:
+      - edna-network
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+  minio_data_dev:
+  blast_data_dev:
+  elasticsearch_data_dev:
+
+networks:
+  edna-network:
+    driver: bridge

@@ -137,3 +137,73 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# eDNA Platform specific ignores
+# Database dumps
+*.sql.gz
+*.dump
+
+# ML models and data
+ml-pipeline/models/*.pkl
+ml-pipeline/models/*.h5
+ml-pipeline/models/*.pth
+ml-pipeline/data/raw/
+ml-pipeline/data/processed/
+ml-pipeline/data/cache/
+
+# BLAST databases
+*.nhr
+*.nin
+*.nsq
+*.ntf
+*.nto
+*.ndb
+*.nai
+
+# Upload directories
+uploads/
+temp/
+
+# Test files and outputs
+test_results/
+*.test.out
+pytest.xml
+
+# Docker volumes
+docker_volumes/
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Bioinformatics
+*.ab1
+*.fasta.gz
+*.fastq.gz
+*.bam.bai
