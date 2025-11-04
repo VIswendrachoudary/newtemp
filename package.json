@@ -1,0 +1,52 @@
+{
+  "name": "edna-biodiversity-platform",
+  "version": "1.0.0",
+  "description": "AI-powered eDNA biodiversity monitoring system",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:ml-pipeline\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:ml-pipeline": "cd ml-pipeline && python -m uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "test": "npm run test:frontend && npm run test:backend && npm run test:ml-pipeline",
+    "test:frontend": "cd frontend && npm run test",
+    "test:backend": "cd backend && npm run test",
+    "test:ml-pipeline": "cd ml-pipeline && python -m pytest",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../ml-pipeline && pip install -r requirements.txt",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
+    "docker:prod": "docker-compose -f docker-compose.prod.yml up --build",
+    "migrate": "cd backend && npm run migrate",
+    "seed": "cd backend && npm run seed"
+  },
+  "keywords": [
+    "edna",
+    "biodiversity",
+    "bioinformatics",
+    "species-identification",
+    "environmental-dna",
+    "machine-learning"
+  ],
+  "author": "eDNA Research Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/edna-biodiversity-platform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/edna-biodiversity-platform/issues"
+  },
+  "homepage": "https://github.com/your-org/edna-biodiversity-platform#readme"
+}
