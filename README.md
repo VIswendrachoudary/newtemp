@@ -23,14 +23,25 @@ A comprehensive web-based platform for environmental DNA (eDNA) biodiversity mon
 
 ```bash
 # Clone and install dependencies
-git clone <repository>
+git clone https://github.com/your-username/edna-biodiversity-platform.git
 cd edna-biodiversity-platform
 npm install
 
 # Start development environment
-docker-compose up -d
+docker-compose -f docker-compose.dev.yml up -d
 npm run dev
 ```
+
+## 🚀 GitHub Repository
+
+**Clone the complete platform:**
+```bash
+git clone https://github.com/your-username/edna-biodiversity-platform.git
+```
+
+**📋 View Repository:** [GitHub Repository](https://github.com/your-username/edna-biodiversity-platform) *(Update with actual URL after upload)*
+
+**🔧 GitHub Upload Guide:** See [GITHUB_UPLOAD.md](./GITHUB_UPLOAD.md)
 
 ## Documentation
 
