@@ -1,0 +1,249 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User management
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  orcidId      String?  @map("orcid_id")
+  institution  String?
+  role         UserRole @default(RESEARCHER)
+  avatarUrl    String?  @map("avatar_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  ownedProjects    Project[]       @relation("ProjectOwner")
+  collaborations   ProjectCollaborator[]
+  analyses         AnalysisJob[]
+  notifications    Notification[]
+  sessions         UserSession[]
+  oauthAccounts    OAuthAccount[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  tokenHash    String   @map("token_hash")
+  refreshToken String?  @map("refresh_token")
+  userAgent    String?  @map("user_agent")
+  ipAddress    String?  @map("ip_address")
+  isActive     Boolean  @default(true) @map("is_active")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model OAuthAccount {
+  id           String      @id @default(cuid())
+  userId       String      @map("user_id")
+  provider     OAuthProvider
+  providerId   String      @map("provider_id")
+  accessToken  String      @map("access_token")
+  refreshToken String?     @map("refresh_token")
+  expiresAt    DateTime?   @map("expires_at")
+  scopes       String[]?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("oauth_accounts")
+}
+
+// Project management
+model Project {
+  id          String           @id @default(cuid())
+  name        String
+  description String
+  ownerId     String           @map("owner_id")
+  visibility  ProjectVisibility @default(PRIVATE)
+  isPublic    Boolean          @default(false) @map("is_public")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  owner        User            @relation("ProjectOwner", fields: [ownerId], references: [id])
+  files        UploadedFile[]
+  analyses     AnalysisJob[]
+  collaborators ProjectCollaborator[]
+
+  @@map("projects")
+}
+
+model ProjectCollaborator {
+  id         String            @id @default(cuid())
+  projectId  String            @map("project_id")
+  userId     String            @map("user_id")
+  role       CollaboratorRole   @default(VIEWER)
+  invitedAt  DateTime          @default(now()) @map("invited_at")
+  joinedAt   DateTime?         @map("joined_at")
+  invitedBy  String            @map("invited_by")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_collaborators")
+}
+
+// File management
+model UploadedFile {
+  id           String       @id @default(cuid())
+  projectId    String       @map("project_id")
+  filename     String
+  originalName String       @map("original_name")
+  filePath     String       @map("file_path")
+  fileSize     Int          @map("file_size")
+  fileType     FileType     @map("file_type")
+  uploadStatus UploadStatus @default(UPLOADING) @map("upload_status")
+  checksum     String?
+  metadata     Json?        // Store file metadata like sequence count, quality metrics
+  uploadedBy   String       @map("uploaded_by")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  analyses  AnalysisJob[]
+
+  @@map("uploaded_files")
+}
+
+// Analysis and processing
+model AnalysisJob {
+  id           String         @id @default(cuid())
+  projectId    String         @map("project_id")
+  fileIds      String[]       @map("file_ids")
+  status       AnalysisStatus @default(QUEUED)
+  parameters   Json           // Analysis parameters
+  results      Json?          // Analysis results
+  progress     Float?         @default(0) // Progress percentage (0-100)
+  startedAt    DateTime?      @map("started_at")
+  completedAt  DateTime?      @map("completed_at")
+  errorMessage String?        @map("error_message")
+  errorDetails Json?          @map("error_details")
+  createdBy    String         @map("created_by")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator User    @relation(fields: [createdBy], references: [id])
+  files   UploadedFile[]
+
+  @@map("analysis_jobs")
+}
+
+// Species identification results
+model SpeciesIdentification {
+  id              String   @id @default(cuid())
+  analysisId      String   @map("analysis_id")
+  sequenceId      String   @map("sequence_id")
+  scientificName  String   @map("scientific_name")
+  commonName      String?  @map("common_name")
+  taxonomy        Json     // Taxonomic classification
+  abundance       Int      // Number of sequences matching this species
+  relativeAbundance Float? @map("relative_abundance")
+  confidence      Float    // Match confidence score
+  hitDetails      Json?    // BLAST hit details
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("species_identifications")
+}
+
+// Notifications
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?            // Additional notification data
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+  readAt    DateTime?        @map("read_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// Enums
+enum UserRole {
+  GUEST
+  RESEARCHER
+  INSTITUTIONAL_ADMIN
+  SYSTEM_ADMIN
+}
+
+enum OAuthProvider {
+  GOOGLE
+  ORCID
+  GITHUB
+}
+
+enum ProjectVisibility {
+  PRIVATE
+  SHARED
+  PUBLIC
+}
+
+enum CollaboratorRole {
+  VIEWER
+  EDITOR
+  ADMIN
+}
+
+enum FileType {
+  FASTA
+  FASTQ
+  SAM
+  BAM
+}
+
+enum UploadStatus {
+  UPLOADING
+  COMPLETED
+  FAILED
+}
+
+enum AnalysisStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum NotificationType {
+  ANALYSIS_COMPLETED
+  ANALYSIS_FAILED
+  FILE_UPLOADED
+  PROJECT_SHARED
+  SYSTEM_ANNOUNCEMENT
+}
