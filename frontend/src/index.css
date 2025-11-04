@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-900 hover:bg-gray-200;
+  }
+
+  .btn-success {
+    @apply btn bg-success-600 text-white hover:bg-success-700;
+  }
+
+  .btn-warning {
+    @apply btn bg-warning-600 text-white hover:bg-warning-700;
+  }
+
+  .btn-error {
+    @apply btn bg-error-600 text-white hover:bg-error-700;
+  }
+
+  .btn-outline {
+    @apply btn border border-gray-300 bg-transparent hover:bg-gray-50;
+  }
+
+  .input {
+    @apply flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .card {
+    @apply rounded-lg border bg-white p-6 shadow-sm;
+  }
+
+  .card-header {
+    @apply flex flex-col space-y-1.5 pb-6;
+  }
+
+  .card-title {
+    @apply text-2xl font-semibold leading-none tracking-tight;
+  }
+
+  .card-description {
+    @apply text-sm text-gray-600;
+  }
+
+  .card-content {
+    @apply pt-0;
+  }
+
+  .card-footer {
+    @apply flex items-center pt-6;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  .badge-default {
+    @apply badge bg-gray-100 text-gray-800 hover:bg-gray-200;
+  }
+
+  .badge-primary {
+    @apply badge bg-primary-100 text-primary-800 hover:bg-primary-200;
+  }
+
+  .badge-success {
+    @apply badge bg-success-100 text-success-800 hover:bg-success-200;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-100 text-warning-800 hover:bg-warning-200;
+  }
+
+  .badge-error {
+    @apply badge bg-error-100 text-error-800 hover:bg-error-200;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .animate-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-down {
+    animation: slideDown 0.3s ease-out;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Loading states */
+.loading-skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-300 border-t-primary-600;
+}
+
+/* File upload area */
+.upload-area {
+  @apply border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors cursor-pointer;
+}
+
+.upload-area.dragover {
+  @apply border-primary-500 bg-primary-50;
+}
+
+/* Chart container */
+.chart-container {
+  @apply w-full h-80 bg-white rounded-lg shadow-sm p-4;
+}
+
+/* Map container */
+.map-container {
+  @apply w-full h-96 bg-gray-100 rounded-lg overflow-hidden;
+}
+
+/* React leaflet fix */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
